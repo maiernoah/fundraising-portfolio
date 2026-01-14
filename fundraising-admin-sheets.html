@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Admin</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #219a52;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .container {
+            display: flex;
+            min-height: calc(100vh - 70px);
+        }
+
+        .sidebar {
+            width: 250px;
+            background: white;
+            border-right: 1px solid #e0e0e0;
+            padding: 20px 0;
+            flex-shrink: 0;
+        }
+
+        .sidebar-title {
+            padding: 0 20px 15px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+            font-weight: 600;
+        }
+
+        .fundraiser-list {
+            list-style: none;
+        }
+
+        .fundraiser-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .fundraiser-item:hover {
+            background: #f8f9fa;
+        }
+
+        .fundraiser-item.active {
+            background: #ebf5fb;
+            border-left-color: #3498db;
+        }
+
+        .fundraiser-name {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .fundraiser-count {
+            background: #e0e0e0;
+            color: #666;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .fundraiser-item.active .fundraiser-count {
+            background: #3498db;
+            color: white;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-x: auto;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .content-title {
+            font-size: 1.4rem;
+            color: #333;
+        }
+
+        .content-title span {
+            color: #3498db;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+
+        th {
+            text-align: left;
+            padding: 15px 20px;
+            background: #f8f9fa;
+            color: #555;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        td {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #333;
+        }
+
+        tr:hover td {
+            background: #fafafa;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+        }
+
+        .empty-state p {
+            margin-bottom: 20px;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-overlay.visible {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 1.2rem;
+            color: #333;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #888;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .modal-footer {
+            padding: 20px 25px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .add-fundraiser-input {
+            display: flex;
+            gap: 10px;
+            padding: 15px 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .add-fundraiser-input input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .add-fundraiser-input input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .delete-fundraiser {
+            background: none;
+            border: none;
+            color: #e74c3c;
+            cursor: pointer;
+            padding: 5px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .fundraiser-item:hover .delete-fundraiser {
+            opacity: 1;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #2c3e50;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 2000;
+        }
+
+        .toast.visible {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            background: #27ae60;
+        }
+
+        .toast.error {
+            background: #e74c3c;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+        }
+
+        .loading-overlay.visible {
+            display: flex;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #e0e0e0;
+            border-top-color: #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .setup-banner {
+            background: #fff3cd;
+            border-bottom: 1px solid #ffc107;
+            padding: 15px 40px;
+            color: #856404;
+        }
+
+        .setup-banner h3 {
+            margin-bottom: 5px;
+        }
+
+        .setup-banner code {
+            background: #ffeeba;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #e0e0e0;
+            }
+            .header {
+                padding: 15px 20px;
+            }
+            .main-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Setup banner - remove once configured -->
+    <div class="setup-banner" id="setupBanner">
+        <h3>⚠️ Setup Required</h3>
+        <p>Update <code>GOOGLE_SHEET_CSV_URL</code> and <code>GOOGLE_APPS_SCRIPT_URL</code> at the top of the script section.</p>
+    </div>
+
+    <header class="header">
+        <h1>⚙️ Portfolio Administration</h1>
+        <div class="header-actions">
+            <button class="btn btn-primary" onclick="openContactModal()">+ Add Contact</button>
+            <button class="btn btn-secondary" onclick="refreshData()">↻ Refresh</button>
+            <a href="fundraising-portfolio-sheets.html" class="btn btn-secondary">View Public Page</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-title">Fundraisers</div>
+            <ul class="fundraiser-list" id="fundraiserList"></ul>
+            <div class="add-fundraiser-input">
+                <input type="text" id="newFundraiserName" placeholder="New fundraiser name">
+                <button class="btn btn-success btn-sm" onclick="addFundraiser()">Add</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="content-header">
+                <h2 class="content-title">Portfolio for <span id="currentFundraiserName">Select a Fundraiser</span></h2>
+            </div>
+            <div class="card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Last Contact</th>
+                            <th>Next Contact</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="contactsTable">
+                        <tr>
+                            <td colspan="5">
+                                <div class="empty-state">
+                                    <p>Loading data from Google Sheets...</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add/Edit Contact Modal -->
+    <div class="modal-overlay" id="contactModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add New Contact</h2>
+                <button class="modal-close" onclick="closeContactModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editingContactId">
+                <div class="form-group">
+                    <label for="contactFirstName">First Name</label>
+                    <input type="text" id="contactFirstName" placeholder="Enter first name">
+                </div>
+                <div class="form-group">
+                    <label for="contactLastName">Last Name</label>
+                    <input type="text" id="contactLastName" placeholder="Enter last name">
+                </div>
+                <div class="form-group">
+                    <label for="contactLastContact">Last Contact Date</label>
+                    <input type="date" id="contactLastContact">
+                </div>
+                <div class="form-group">
+                    <label for="contactNextContact">Next Contact Date</label>
+                    <input type="date" id="contactNextContact">
+                </div>
+                <div class="form-group">
+                    <label for="contactAssignee">Assign to Fundraiser</label>
+                    <select id="contactAssignee"></select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeContactModal()">Cancel</button>
+                <button class="btn btn-success" onclick="saveContact()" id="saveContactBtn">Save Contact</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Confirm Delete</h2>
+                <button class="modal-close" onclick="closeDeleteModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong id="deleteContactName"></strong>? This action cannot be undone.</p>
+                <input type="hidden" id="deleteContactId">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+                <button class="btn btn-danger" onclick="confirmDelete()" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ============================================
+        // CONFIGURATION - UPDATE THESE URLs
+        // ============================================
+        const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRaRfh_-iQegOlO1Doq9-aQPD38PHtO18aGTogGmRoznQa1FGICdyyrxVXtAUiKeQ2T1UE52J-GQyro/pub?output=csv';
+        // Example: 'https://docs.google.com/spreadsheets/d/e/2PACX-xxxxx/pub?output=csv'
+
+        const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwD5fyeKRlivMzkpKzo_ICWnVnLW7TaFKmCaWDtTCINFRzbGl1ZdaNFUqyi1FP1Ld9s/exec';
+        // Example: 'https://script.google.com/macros/s/xxxxx/exec'
+        // ============================================
+
+        let allContacts = [];
+        let currentFundraiser = null;
+
+        // Check if configured
+        function checkSetup() {
+            const needsSetup = GOOGLE_SHEET_CSV_URL === 'YOUR_GOOGLE_SHEET_CSV_URL_HERE' || 
+                              GOOGLE_APPS_SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+            document.getElementById('setupBanner').style.display = needsSetup ? 'block' : 'none';
+            return !needsSetup;
+        }
+
+        async function init() {
+            if (checkSetup()) {
+                await loadData();
+            }
+            renderFundraiserList();
+            updateAssigneeDropdown();
+        }
+
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.add('visible');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('visible');
+        }
+
+        async function loadData() {
+            try {
+                const response = await fetch(GOOGLE_SHEET_CSV_URL);
+                const csvText = await response.text();
+                allContacts = parseCSV(csvText);
+                console.log('Loaded contacts:', allContacts);
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showToast('Error loading data from Google Sheets', 'error');
+            }
+        }
+
+        function parseCSV(csvText) {
+            const lines = csvText.split('\n');
+            // Convert headers to lowercase for case-insensitive matching
+            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, '').toLowerCase());
+            const contacts = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                
+                const values = parseCSVLine(lines[i]);
+                const contact = {};
+                
+                headers.forEach((header, index) => {
+                    contact[header] = values[index] || '';
+                });
+                
+                if (contact.id) {
+                    contact.id = parseInt(contact.id);
+                }
+                
+                contacts.push(contact);
+            }
+
+            return contacts;
+        }
+
+        function parseCSVLine(line) {
+            const values = [];
+            let current = '';
+            let inQuotes = false;
+
+            for (let char of line) {
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    values.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            values.push(current.trim());
+
+            return values;
+        }
+
+        function getFundraisers() {
+            const fundraisers = new Set();
+            allContacts.forEach(c => {
+                if (c.fundraiser) {
+                    fundraisers.add(c.fundraiser.toLowerCase());
+                }
+            });
+            return Array.from(fundraisers).sort();
+        }
+
+        function renderFundraiserList() {
+            const list = document.getElementById('fundraiserList');
+            const fundraisers = getFundraisers();
+            
+            if (fundraisers.length === 0) {
+                list.innerHTML = '<li style="padding: 15px 20px; color: #888; font-size: 0.9rem;">No fundraisers yet</li>';
+                return;
+            }
+
+            list.innerHTML = fundraisers.map(name => {
+                const displayName = name.charAt(0).toUpperCase() + name.slice(1);
+                const count = allContacts.filter(c => c.fundraiser && c.fundraiser.toLowerCase() === name).length;
+                const isActive = currentFundraiser === name;
+
+                return `
+                    <li class="fundraiser-item ${isActive ? 'active' : ''}" onclick="selectFundraiser('${name}')">
+                        <span class="fundraiser-name">${displayName}</span>
+                        <span class="fundraiser-count">${count}</span>
+                    </li>
+                `;
+            }).join('');
+        }
+
+        function selectFundraiser(name) {
+            currentFundraiser = name;
+            document.getElementById('currentFundraiserName').textContent = name.charAt(0).toUpperCase() + name.slice(1);
+            renderFundraiserList();
+            renderContacts();
+        }
+
+        function renderContacts() {
+            const tbody = document.getElementById('contactsTable');
+            
+            if (!currentFundraiser) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <p>Select a fundraiser from the sidebar to view and manage their portfolio.</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            const contacts = allContacts.filter(c => 
+                c.fundraiser && c.fundraiser.toLowerCase() === currentFundraiser
+            );
+
+            if (contacts.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <p>No contacts in this portfolio yet.</p>
+                                <button class="btn btn-primary" onclick="openContactModal()">Add First Contact</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = contacts.map(contact => `
+                <tr>
+                    <td>${contact.firstName || ''}</td>
+                    <td>${contact.lastName || ''}</td>
+                    <td>${formatDate(contact.lastContact)}</td>
+                    <td>${formatDate(contact.nextContact)}</td>
+                    <td>
+                        <div class="actions">
+                            <button class="btn btn-primary btn-sm" onclick="editContact(${contact.id})">Edit</button>
+                            <button class="btn btn-danger btn-sm" onclick="openDeleteModal(${contact.id}, '${contact.firstName} ${contact.lastName}')">Delete</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            if (isNaN(date)) return dateStr;
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        }
+
+        function updateAssigneeDropdown() {
+            const select = document.getElementById('contactAssignee');
+            const fundraisers = getFundraisers();
+            
+            if (fundraisers.length === 0) {
+                select.innerHTML = '<option value="">-- Add a fundraiser first --</option>';
+                return;
+            }
+
+            select.innerHTML = fundraisers.map(name => {
+                const displayName = name.charAt(0).toUpperCase() + name.slice(1);
+                return `<option value="${name}">${displayName}</option>`;
+            }).join('');
+        }
+
+        function openContactModal(contactId = null) {
+            document.getElementById('contactModal').classList.add('visible');
+            document.getElementById('modalTitle').textContent = contactId ? 'Edit Contact' : 'Add New Contact';
+            document.getElementById('editingContactId').value = contactId || '';
+            
+            updateAssigneeDropdown();
+            
+            if (currentFundraiser) {
+                document.getElementById('contactAssignee').value = currentFundraiser;
+            }
+
+            if (!contactId) {
+                document.getElementById('contactFirstName').value = '';
+                document.getElementById('contactLastName').value = '';
+                document.getElementById('contactLastContact').value = '';
+                document.getElementById('contactNextContact').value = '';
+            }
+        }
+
+        function closeContactModal() {
+            document.getElementById('contactModal').classList.remove('visible');
+        }
+
+        function editContact(contactId) {
+            const contact = allContacts.find(c => c.id === contactId);
+
+            if (contact) {
+                openContactModal(contactId);
+                document.getElementById('contactFirstName').value = contact.firstName || '';
+                document.getElementById('contactLastName').value = contact.lastName || '';
+                document.getElementById('contactLastContact').value = contact.lastContact || '';
+                document.getElementById('contactNextContact').value = contact.nextContact || '';
+                document.getElementById('contactAssignee').value = contact.fundraiser ? contact.fundraiser.toLowerCase() : '';
+            }
+        }
+
+        async function saveContact() {
+            const editingId = document.getElementById('editingContactId').value;
+            const firstName = document.getElementById('contactFirstName').value.trim();
+            const lastName = document.getElementById('contactLastName').value.trim();
+            const lastContact = document.getElementById('contactLastContact').value;
+            const nextContact = document.getElementById('contactNextContact').value;
+            const assignee = document.getElementById('contactAssignee').value;
+
+            if (!firstName || !lastName) {
+                showToast('Please enter first and last name');
+                return;
+            }
+
+            if (!assignee) {
+                showToast('Please select a fundraiser');
+                return;
+            }
+
+            const saveBtn = document.getElementById('saveContactBtn');
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+            showLoading();
+
+            try {
+                const action = editingId ? 'update' : 'add';
+                const params = new URLSearchParams({
+                    action: action,
+                    fundraiser: assignee,
+                    firstName: firstName,
+                    lastName: lastName,
+                    lastContact: lastContact,
+                    nextContact: nextContact
+                });
+
+                if (editingId) {
+                    params.append('id', editingId);
+                }
+
+                const response = await fetch(`${GOOGLE_APPS_SCRIPT_URL}?${params.toString()}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast(editingId ? 'Contact updated successfully' : 'Contact added successfully', 'success');
+                    closeContactModal();
+                    await refreshData();
+                } else {
+                    showToast('Error: ' + (result.error || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                console.error('Error saving contact:', error);
+                showToast('Error saving contact. Check console for details.', 'error');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save Contact';
+                hideLoading();
+            }
+        }
+
+        function openDeleteModal(contactId, contactName) {
+            document.getElementById('deleteModal').classList.add('visible');
+            document.getElementById('deleteContactId').value = contactId;
+            document.getElementById('deleteContactName').textContent = contactName;
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('visible');
+        }
+
+        async function confirmDelete() {
+            const contactId = document.getElementById('deleteContactId').value;
+            const deleteBtn = document.getElementById('confirmDeleteBtn');
+            
+            deleteBtn.disabled = true;
+            deleteBtn.textContent = 'Deleting...';
+            showLoading();
+
+            try {
+                const params = new URLSearchParams({
+                    action: 'delete',
+                    id: contactId
+                });
+
+                const response = await fetch(`${GOOGLE_APPS_SCRIPT_URL}?${params.toString()}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast('Contact deleted successfully', 'success');
+                    closeDeleteModal();
+                    await refreshData();
+                } else {
+                    showToast('Error: ' + (result.error || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting contact:', error);
+                showToast('Error deleting contact. Check console for details.', 'error');
+            } finally {
+                deleteBtn.disabled = false;
+                deleteBtn.textContent = 'Delete';
+                hideLoading();
+            }
+        }
+
+        function addFundraiser() {
+            const input = document.getElementById('newFundraiserName');
+            const name = input.value.trim().toLowerCase();
+
+            if (!name) {
+                showToast('Please enter a fundraiser name');
+                return;
+            }
+
+            if (getFundraisers().includes(name)) {
+                showToast('A fundraiser with this name already exists');
+                return;
+            }
+
+            // Add a placeholder contact so the fundraiser appears
+            // They can then add real contacts
+            allContacts.push({
+                id: 'temp_' + Date.now(),
+                fundraiser: name,
+                firstName: '',
+                lastName: '',
+                lastContact: '',
+                nextContact: ''
+            });
+
+            input.value = '';
+            renderFundraiserList();
+            updateAssigneeDropdown();
+            selectFundraiser(name);
+            showToast('Fundraiser added. Add contacts to save to Google Sheets.', 'success');
+        }
+
+        async function refreshData() {
+            showLoading();
+            await loadData();
+            renderFundraiserList();
+            renderContacts();
+            updateAssigneeDropdown();
+            hideLoading();
+            showToast('Data refreshed', 'success');
+        }
+
+        function showToast(message, type = '') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast visible ' + type;
+            
+            setTimeout(() => {
+                toast.classList.remove('visible');
+            }, 3000);
+        }
+
+        // Initialize on page load
+        init();
+    </script>
+</body>
+</html>
